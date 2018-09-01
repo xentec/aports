@@ -59,10 +59,10 @@ package() {
 
 	cd "$pkgdir"
 
-	mkdir -p usr/lib/clang
+	mkdir -p usr/lib/clang/$pkgver/lib
 	case "$CARCH" in
 		ppc64le | s390x) ;;
-		*) mv usr/lib/linux usr/lib/clang/$pkgver;;
+		*) mv usr/lib/linux usr/lib/clang/$pkgver/lib;;
 	esac
 }
 
