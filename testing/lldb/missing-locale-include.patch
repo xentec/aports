@@ -1,0 +1,10 @@
+--- a/source/Core/IOHandler.cpp
++++ b/source/Core/IOHandler.cpp
+@@ -8,6 +8,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #include "lldb/Core/IOHandler.h"
++#include <locale.h>
+ 
+ // C Includes
+ #ifndef LLDB_DISABLE_CURSES
