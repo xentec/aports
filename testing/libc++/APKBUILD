@@ -68,6 +68,7 @@ build() {
 		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
 		-DCMAKE_C_COMPILER=clang \
 		-DCMAKE_C_FLAGS="$CFLAGS" \
+		-DLLVM_EXTERNAL_LIT=/usr/bin/lit \
 		-DLIBCXX_HAS_MUSL_LIBC=ON \
 		-DLIBCXX_CXX_ABI=libcxxabi \
 		-DLIBCXX_CXX_ABI_INCLUDE_PATHS="$_abidir"/include \
