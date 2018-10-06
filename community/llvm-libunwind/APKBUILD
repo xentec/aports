@@ -2,7 +2,7 @@
 # Maintainer: Jakub Jirutka <jakub@jirutka.cz>
 pkgname=llvm-libunwind
 # Note: Update together with llvm.
-pkgver=6.0.1
+pkgver=7.0.0
 _pkgname=libunwind
 _llvmver=${pkgver%%.*}
 pkgrel=0
@@ -11,9 +11,11 @@ url="http://llvm.org/"
 arch="all !s390x"
 license="BSD"
 depends_dev="!libunwind-dev"
-makedepends="cmake llvm$_llvmver-dev"
+makedepends_build="cmake ninja"
+makedepends_host="llvm$_llvmver-dev"
 subpackages="$pkgname-dev"
 source="https://www.llvm.org/releases/$pkgver/$_pkgname-$pkgver.src.tar.xz"
+
 builddir="$srcdir/$_pkgname-$pkgver.src"
 options="!check"
 
@@ -27,7 +29,7 @@ build() {
 		-DCMAKE_HOST_SYSTEM_NAME=Linux
 		-DLIBUNWIND_SYSROOT=$CBUILDROOT"
 
-	cmake .. \
+	cmake -Wno-dev -G Ninja \
 		-DCMAKE_BUILD_TYPE=MinSizeRel \
 		-DCMAKE_C_FLAGS_MINSIZEREL_INIT="$CFLAGS" \
 		-DCMAKE_CXX_FLAGS_MINSIZEREL_INIT="$CXXFLAGS" \
@@ -36,16 +38,19 @@ build() {
 		\
 		-DLLVM_CONFIG_PATH="/usr/lib/llvm$_llvmver/bin/llvm-config" \
 		-DLIBUNWIND_HAS_NODEFAULTLIBS_FLAG=OFF \
-		$crossopts
-	make
+		$crossopts \
+		"$builddir"
+
+	ninja
 }
 
 package() {
 	cd "$builddir"
-	make -C build install DESTDIR="$pkgdir"
+	export DESTDIR="$pkgdir"
 
+	ninja -C build install
 	mkdir -p "$pkgdir"/usr/include
 	cp include/*.h "$pkgdir"/usr/include/
 }
 
-sha512sums="78568c28720abdd1f8471c462421df9965e05e1db048689d16ac85378716c4080ec1723af78e9f61d133b0ff82ac8c1f0dde7fd42d194485f62c1a17c02db37f  libunwind-6.0.1.src.tar.xz"
+sha512sums="9ee573089f4d0bfb57bd9012e3ad3308fe53216a8e6745aa35dfaa16e56c1adbfc419e336e235a8e76f57b01b9e6e6c9ceff624bd99a90f519137e62f141738d  libunwind-7.0.0.src.tar.xz"
