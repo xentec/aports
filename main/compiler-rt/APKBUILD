@@ -2,23 +2,17 @@
 # Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 pkgname=compiler-rt
 # Note: Update together with llvm.
-pkgver=6.0.1
+pkgver=7.0.0
 pkgrel=0
 _llvmver=${pkgver%%.*}
 pkgdesc="LLVM compiler-rt runtime libraries"
 arch="all !ppc64le !s390x"
 url="http://llvm.org/"
 license="UOI-NCSA"
-makedepends="
-	cmake
-	linux-headers
-	clang
-	llvm-dev>=$_llvmver
-	llvm-static>=$_llvmver
-	python2
-	"
+makedepends_build="clang cmake ninja python2"
+makedepends_host="linux-headers llvm-dev>=$_llvmver llvm-static>=$_llvmver"
 checkdepends="llvm-test-utils>=$_llvmver"
-source="https://llvm.org/releases/$pkgver/$pkgname-$pkgver.src.tar.xz"
+source="https://llvm.org/releases/$pkgver/compiler-rt-$pkgver.src.tar.xz"
 builddir="$srcdir/$pkgname-$pkgver.src"
 
 build() {
@@ -27,7 +21,7 @@ build() {
 
 	# compiler-rt uses llvm intrinsic types for testing
 	# and therefore requires clang
-	cmake .. \
+	cmake -Wno-dev -G Ninja \
 		-DCMAKE_C_COMPILER=clang \
 		-DCMAKE_CXX_COMPILER=clang++ \
 		\
@@ -40,22 +34,25 @@ build() {
 		-DCOMPILER_RT_INCLUDE_TESTS=OFF \
 		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
 		-DCOMPILER_RT_BUILD_XRAY=OFF \
-		-DLIT_COMMAND="/usr/bin/lit"
-	make
+		-DLLVM_EXTERNAL_LIT="/usr/bin/lit" \
+		"$builddir"
+
+	ninja
 }
 
 check() {
 	cd "$builddir"/build
 	# remove test that does not work with PaX kernel
-	rm ../test/builtins/Unit/enable_execute_stack_test.c \
-		../test/builtins/Unit/clear_cache_test.c
-	make check-compiler-rt || true
+	#rm ../test/builtins/Unit/enable_execute_stack_test.c \
+	#	../test/builtins/Unit/clear_cache_test.c
+	#ninja check-compiler-rt
 }
 
 package() {
 	cd "$builddir"/build
+	export DESTDIR="$pkgdir"
 
-	make DESTDIR="$pkgdir" install
+	ninja install
 
 	cd "$pkgdir"
 
@@ -66,4 +63,4 @@ package() {
 	esac
 }
 
-sha512sums="69850c1ad92c66977fa217cbfb42a6a3f502fbe3d1a08daa7fc4cfeb617a7736d231f8ad8d93b10b1ae29bd753315d2a2d70f9ff1f4d18a9a7cc81758d91f963  compiler-rt-6.0.1.src.tar.xz"
+sha512sums="fb36aab38e7b7e3c23ad8598a54a5d7d36a30bc306c60c95b074029ffad48cb1d74fa5acde34b4affc50827562fd794969ae31067bd64e116281eb65ae4f4346  compiler-rt-7.0.0.src.tar.xz"
