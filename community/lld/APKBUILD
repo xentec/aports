@@ -1,20 +1,15 @@
 # Contributor: Jakub Jirutka <jakub@jirutka.cz>
 # Maintainer: Jakub Jirutka <jakub@jirutka.cz>
 pkgname=lld
-pkgver=6.0.1
-pkgrel=1
+pkgver=7.0.0
+pkgrel=0
 _llvmver=${pkgver%%.*}
 pkgdesc="The LLVM Linker"
 url="http://llvm.org"
 arch="all"
 license="UOI-NCSA"
-makedepends="
-	cmake
-	libedit-dev
-	llvm-dev>=$_llvmver
-	llvm-static>=$_llvmver
-	llvm-test-utils>=$_llvmver
-	zlib-dev"
+makedepends_build="cmake ninja llvm-test-utils>=$_llvmver"
+makedepends_host="libedit-dev llvm-dev>=$_llvmver llvm-static>=$_llvmver zlib-dev"
 checkdepends="gtest gtest-dev"
 subpackages="$pkgname-dev $pkgname-libs"
 source="https://llvm.org/releases/$pkgver/$pkgname-$pkgver.src.tar.xz"
@@ -24,7 +19,7 @@ build() {
 	mkdir -p "$builddir"/build
 	cd "$builddir"/build
 
-	cmake .. \
+	cmake -Wno-dev -G Ninja \
 		-DCMAKE_BUILD_TYPE=MinSizeRel \
 		-DCMAKE_VERBOSE_MAKEFILE=OFF \
 		-DCMAKE_C_FLAGS_MINSIZEREL_INIT="$CFLAGS" \
@@ -37,21 +32,23 @@ build() {
 		-DLLVM_EXTERNAL_LIT=/usr/bin/lit \
 		-DLLVM_LINK_LLVM_DYLIB=ON \
 		-DBUILD_SHARED_LIBS=ON \
+		"$builddir"
 
-	make
+	ninja
 }
 
 check() {
 	cd "$builddir/build"
 	# enable if tests on armhf are still failing
 #	[ "$CARCH" = "armhf" ] && return 0
-	make check-lld
+	ninja check-lld
 }
 
 package() {
 	cd "$builddir"/build
+	export DESTDIR="$pkgdir"
 
-	make install DESTDIR="$pkgdir"
+	ninja install 
 }
 
-sha512sums="856ccc125255ab6184919f1424372f0f8a5de8477777047e2ab1a131a2ecec0caa9b5163d01409c7c510df9c794f0bc8d65cc904df2baf6462ef53bc163e002a  lld-6.0.1.src.tar.xz"
+sha512sums="14f34557d8b72b252632e7aae2e0c0551b829026a152659cc290ead68d5944a7ffb1906af95b9265228fee2b45cc561c6261cc56bb1bd61dca01149e80ca9d56  lld-7.0.0.src.tar.xz"
